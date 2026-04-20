@@ -1,0 +1,62 @@
+.muro-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.muro-form textarea {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: none;
+  margin-bottom: 10px;
+}
+
+.muro-form button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.muro-feed {
+  margin-top: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.mensaje-card {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  border-left: 5px solid #007bff;
+}
+
+.mensaje-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 0.9em;
+  color: #555;
+}
+.btn-borrar-comentario {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.btn-borrar-comentario:hover {
+  background: #ffebee; /* Un rojito muy suave al pasar el mouse */
+}
