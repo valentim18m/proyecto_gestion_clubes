@@ -1,3 +1,4 @@
+import Perfil from './components/Perfil';
 import { useState } from "react";
 import FormularioSocio from "./components/FormularioSocio";
 import TablaSocios from "./components/TablaSocios";
