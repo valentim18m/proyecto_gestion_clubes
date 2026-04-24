@@ -1,5 +1,6 @@
 import Perfil from './components/Perfil';
 import { useState } from "react";
+import { useState, useEffect } from "react"; // Solo una vez
 import FormularioSocio from "./components/FormularioSocio";
 import TablaSocios from "./components/TablaSocios";
 import { Muro } from "./components/Muro";
@@ -7,8 +8,23 @@ import { Registro } from "./components/RegistroSocio";
 import Login from "./components/Login";
 
 export default function App() {
-  // 1. Creamos el estado para el usuario
   const [usuario, setUsuario] = useState(null);
+
+  // --- 1. AQUÍ VA EL EFECTO PARA EL F5 ---
+  useEffect(() => {
+    const usuarioGuardado = localStorage.getItem("usuario");
+    if (usuarioGuardado) {
+      // Si hay algo guardado, lo volvemos a convertir en objeto
+      setUsuario(JSON.parse(usuarioGuardado));
+    }
+  }, []);
+
+  // --- 2. FUNCIÓN PARA CERRAR SESIÓN PROLIJO ---
+  const cerrarSesion = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+    setUsuario(null);
+  };
 
   return (
     <div
@@ -23,7 +39,6 @@ export default function App() {
         Sistema de Gestión - Club de Fútbol ⚽
       </h1>
 
-      {/* 2. CONDICIONAL: Si NO hay usuario, mostramos acceso */}
       {!usuario ? (
         <div
           style={{
@@ -36,14 +51,11 @@ export default function App() {
           <div style={{ flex: "1", minWidth: "300px", margin: "10px" }}>
             <Registro />
           </div>
-
           <div style={{ flex: "1", minWidth: "300px", margin: "10px" }}>
-            {/* Le pasamos setUsuario al Login para que cuando entre, nos avise */}
             <Login setUsuario={setUsuario} />
           </div>
         </div>
       ) : (
-        /* 3. CONDICIONAL: Si HAY usuario, mostramos el panel privado */
         <>
           <div
             style={{
@@ -58,10 +70,8 @@ export default function App() {
             <span>
               Bienvenido, <strong>{usuario.nombre}</strong> (Rol: {usuario.rol})
             </span>
-            <button
-              onClick={() => setUsuario(null)}
-              style={{ cursor: "pointer" }}
-            >
+            {/* --- 3. CAMBIAMOS EL ONCLICK AQUÍ --- */}
+            <button onClick={cerrarSesion} style={{ cursor: "pointer" }}>
               Cerrar Sesión
             </button>
           </div>
@@ -75,7 +85,7 @@ export default function App() {
 
           <hr style={{ margin: "50px 0", borderTop: "2px solid #eee" }} />
 
-          {/* 4. Agregamos el Muro al final */}
+          {/* Pasamos el ID del usuario al Muro */}
           <Muro usuarioId={usuario.id} />
         </>
       )}
