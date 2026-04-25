@@ -10,22 +10,35 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- 1. RUTAS DE USUARIOS ---
+// ==========================================
+// 1. RUTAS DE USUARIOS (AUTENTICACIÓN)
+// ==========================================
 
+// Registro de nuevos usuarios/socios
 app.post("/api/registro", async (req, res) => {
-  const { nombre, email, password } = req.body;
+  const { nombre, email, password, rol } = req.body;
+  // Si no se envía un rol, por defecto es 'usuario'
+  const usuarioRol = rol || "usuario";
+
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+
+    // CORRECCIÓN: Agregamos el campo 'rol' al INSERT
     const query =
-      "INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)";
-    await pool.query(query, [nombre, email, hashedPassword]);
+      "INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)";
+    await pool.query(query, [nombre, email, hashedPassword, usuarioRol]);
+
     res.status(201).json({ mensaje: "Usuario registrado con éxito" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error en registro:", err.message);
+    res
+      .status(500)
+      .json({ error: "Error al registrar: el email ya podría existir" });
   }
 });
 
+// Inicio de sesión
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -33,14 +46,17 @@ app.post("/api/login", async (req, res) => {
       "SELECT * FROM usuarios WHERE email = ?",
       [email],
     );
+
     if (results.length === 0)
       return res.status(400).json({ mensaje: "Credenciales inválidas" });
 
     const usuario = results[0];
     const esValida = await bcrypt.compare(password, usuario.password);
+
     if (!esValida)
       return res.status(400).json({ mensaje: "Credenciales inválidas" });
 
+    // Firmamos el token con el ID y el Rol
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol },
       process.env.JWT_SECRET || "clave_secreta_provisoria",
@@ -50,21 +66,25 @@ app.post("/api/login", async (req, res) => {
     res.json({
       mensaje: "¡Bienvenido al sistema del Club!",
       token,
-      usuario: { id: usuario.id, nombre: usuario.nombre, rol: usuario.rol },
+      usuario: {
+        id: usuario.id,
+        email: usuario.email,
+        nombre: usuario.nombre,
+        rol: usuario.rol, // Importante para el frontend
+      },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// --- 2. RUTA DEL MURO (INTERACCIÓN) ---
+// ==========================================
+// 2. RUTA DEL MURO (INTERACCIÓN)
+// ==========================================
 
-// Esta ya la tenés (es para ver los mensajes)
-// --- 2. RUTA DEL MURO (INTERACCIÓN) ---
-
+// Obtener todos los comentarios con el nombre del autor
 app.get("/api/comentarios", async (req, res) => {
   try {
-    // El c.id_usuario tiene que ir acá arriba, en el SELECT
     const query = `
       SELECT 
         c.id, 
@@ -84,6 +104,7 @@ app.get("/api/comentarios", async (req, res) => {
   }
 });
 
+// Publicar un comentario
 app.post("/api/comentarios", async (req, res) => {
   const { id_usuario, texto } = req.body;
   try {
@@ -91,63 +112,77 @@ app.post("/api/comentarios", async (req, res) => {
     await pool.query(query, [id_usuario, texto]);
     res.status(201).json({ mensaje: "Comentario publicado con éxito" });
   } catch (err) {
-    console.error("❌ ERROR EN EL POST DE COMENTARIOS:", err); // <--- AGREGÁ ESTO
+    console.error("❌ ERROR EN EL POST DE COMENTARIOS:", err);
     res.status(500).json({ error: "No se pudo guardar el comentario" });
   }
 });
 
-// Borrar un comentario del muro
+// Borrar un comentario
 app.delete("/api/comentarios/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const [result] = await pool.query("DELETE FROM comentarios WHERE id = ?", [
       id,
     ]);
-
-    if (result.affectedRows === 0) {
+    if (result.affectedRows === 0)
       return res.status(404).json({ mensaje: "El comentario no existe" });
-    }
-
-    res.json({ mensaje: "Comentario eliminado correctamente" });
+    res.json({ mensaje: "Comentario eliminado" });
   } catch (err) {
-    console.error("Error al eliminar comentario:", err);
     res.status(500).json({ error: "No se pudo eliminar el comentario" });
   }
 });
 
-// --- 3. RUTAS DEL CLUB (CRUD SOCIOS) ---
+// ==========================================
+// 3. RUTAS DEL CLUB (GESTIÓN DE SOCIOS)
+// ==========================================
 
+// Traer la lista de socios
 app.get("/api/socios", async (req, res) => {
   try {
-    const [results] = await pool.query("SELECT * FROM socios");
-    res.json(results);
+    const [rows] = await pool.query("SELECT * FROM socios ORDER BY id DESC");
+    res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "No se pudo obtener la lista de socios" });
   }
 });
 
+// Agregar un socio nuevo
 app.post("/api/socios", async (req, res) => {
   const { nombre, apellido, dni, categoria } = req.body;
   const query =
     "INSERT INTO socios (nombre, apellido, dni, categoria) VALUES (?, ?, ?, ?)";
   try {
     await pool.query(query, [nombre, apellido, dni, categoria]);
-    res.json({ mensaje: "Socio agregado" });
+    res.status(201).json({ mensaje: "Socio agregado" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error al agregar socio:", err.message);
+    res.status(500).json({ error: "Error: El DNI podría estar duplicado" });
   }
 });
 
+// Eliminar un socio (PROTEGIDO POR ROL)
 app.delete("/api/socios/:id", async (req, res) => {
   const { id } = req.params;
+  const { rol } = req.query; // Recibimos el rol desde el frontend
+
+  // SEGURIDAD: Solo el admin puede borrar socios
+  if (rol !== "admin") {
+    return res
+      .status(403)
+      .json({ mensaje: "Acceso denegado: Se requiere rol de administrador" });
+  }
+
   try {
-    await pool.query("DELETE FROM socios WHERE id = ?", [id]);
+    const [result] = await pool.query("DELETE FROM socios WHERE id = ?", [id]);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ mensaje: "Socio no encontrado" });
     res.json({ mensaje: "Socio eliminado correctamente" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Error al intentar borrar el socio" });
   }
 });
 
+// Configuración del puerto
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);

@@ -22,11 +22,26 @@ const FormularioSocio = ({ recargarSocios }) => {
       });
 
       if (response.ok) {
+        // 1. Feedback visual de éxito
+        alert("✅ ¡Socio guardado con éxito!");
+
+        // 2. Limpiamos los campos para que quede listo para el siguiente
         setNuevoSocio({ nombre: "", apellido: "", dni: "", categoria: "" });
-        recargarSocios(); // Le avisa al componente padre que actualice la tabla
+
+        // 3. ¡ESTA ES LA MAGIA! Avisamos al App.jsx que la tabla debe actualizarse
+        if (recargarSocios) {
+          recargarSocios();
+        }
+      } else {
+        // 4. Si el servidor responde con error (ej: DNI duplicado)
+        const errorData = await response.json();
+        alert(
+          "❌ Error: " + (errorData.mensaje || "No se pudo guardar el socio"),
+        );
       }
     } catch (error) {
       console.error("Error al agregar socio:", error);
+      alert("🚀 Error de conexión. Chequeá si el backend está prendido.");
     }
   };
 
@@ -52,7 +67,7 @@ const FormularioSocio = ({ recargarSocios }) => {
         />
         <input
           name="dni"
-          placeholder="DNI"
+          placeholder="DNI (Sin puntos)"
           value={nuevoSocio.dni}
           onChange={handleChange}
           required
@@ -60,7 +75,7 @@ const FormularioSocio = ({ recargarSocios }) => {
         />
         <input
           name="categoria"
-          placeholder="Categoría"
+          placeholder="Categoría (Ej: Infantil, Mayor)"
           value={nuevoSocio.categoria}
           onChange={handleChange}
           required
@@ -74,31 +89,47 @@ const FormularioSocio = ({ recargarSocios }) => {
   );
 };
 
-// Estilos separados abajo para no ensuciar el HTML
+// Estilos para que se vea prolijo y profesional
 const styles = {
   card: {
-    padding: "20px",
-    backgroundColor: "#fff",
-    borderRadius: "8px",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+    padding: "25px",
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+    marginBottom: "30px",
+    border: "1px solid #eee",
+  },
+  title: {
+    marginTop: 0,
+    color: "#2c3e50",
+    fontSize: "1.5rem",
+    textAlign: "center",
     marginBottom: "20px",
   },
-  title: { marginTop: 0, color: "#333" },
-  form: { display: "flex", gap: "10px", flexWrap: "wrap" },
+  form: {
+    display: "flex",
+    gap: "12px",
+    flexWrap: "wrap",
+  },
   input: {
-    flex: 1,
-    padding: "8px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
+    flex: "1 1 200px", // Se adapta al ancho disponible
+    padding: "10px",
+    border: "1px solid #dcdde1",
+    borderRadius: "6px",
+    fontSize: "1rem",
+    outline: "none",
   },
   button: {
-    backgroundColor: "#28a745",
+    backgroundColor: "#2ecc71",
     color: "white",
     border: "none",
-    padding: "10px 15px",
-    borderRadius: "4px",
+    padding: "10px 25px",
+    borderRadius: "6px",
     cursor: "pointer",
     fontWeight: "bold",
+    fontSize: "1rem",
+    transition: "background 0.3s ease",
+    marginLeft: "auto",
   },
 };
 

@@ -1,7 +1,13 @@
 import { useState } from "react";
 
 export const Registro = () => {
-  const [datos, setDatos] = useState({ nombre: "", email: "", password: "" });
+  // 1. Agregamos 'rol' al estado inicial
+  const [datos, setDatos] = useState({
+    nombre: "",
+    email: "",
+    password: "",
+    rol: "socio", // <--- Por defecto son usuarios comunes
+  });
 
   const manejarCambio = (e) => {
     setDatos({ ...datos, [e.target.name]: e.target.value });
@@ -18,45 +24,92 @@ export const Registro = () => {
 
       const res = await response.json();
       if (response.ok) {
-        alert("¡Usuario registrado! Ahora ya podés probar el Login.");
+        alert("¡Usuario registrado con éxito! Ya podés iniciar sesión.");
+        // Limpiamos el formulario (opcional)
+        setDatos({ nombre: "", email: "", password: "", rol: "usuario" });
       } else {
         alert(res.error || "Error al registrar");
       }
     } catch (error) {
       console.error("Error:", error);
+      alert("Error de conexión con el servidor");
     }
   };
 
   return (
     <div
-      style={{ padding: "20px", border: "1px solid #ccc", marginTop: "20px" }}
+      style={{
+        padding: "20px",
+        border: "1px solid #ccc",
+        borderRadius: "8px",
+        backgroundColor: "#f9f9f9", // Un gris clarito para diferenciarlo del login
+        marginTop: "20px",
+      }}
     >
-      <h3>Registro de Nuevo Usuario</h3>
+      <h3 style={{ color: "#333", textAlign: "center" }}>
+        Registro de Socio ⚽
+      </h3>
       <form onSubmit={enviarRegistro}>
         <input
           name="nombre"
-          placeholder="Nombre"
+          placeholder="Nombre completo"
+          value={datos.nombre} // Controlamos el input
           onChange={manejarCambio}
           required
-          style={{ display: "block", marginBottom: "5px" }}
+          style={{
+            display: "block",
+            marginBottom: "10px",
+            width: "100%",
+            padding: "8px",
+            boxSizing: "border-box",
+          }}
         />
         <input
           name="email"
           type="email"
-          placeholder="Email"
+          placeholder="Email de contacto"
+          value={datos.email}
           onChange={manejarCambio}
           required
-          style={{ display: "block", marginBottom: "5px" }}
+          style={{
+            display: "block",
+            marginBottom: "10px",
+            width: "100%",
+            padding: "8px",
+            boxSizing: "border-box",
+          }}
         />
         <input
           name="password"
           type="password"
-          placeholder="Contraseña"
+          placeholder="Crear Contraseña"
+          value={datos.password}
           onChange={manejarCambio}
           required
-          style={{ display: "block", marginBottom: "5px" }}
+          style={{
+            display: "block",
+            marginBottom: "10px",
+            width: "100%",
+            padding: "8px",
+            boxSizing: "border-box",
+          }}
         />
-        <button type="submit">Registrarme</button>
+
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            padding: "10px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          Registrarme en el Club
+        </button>
       </form>
     </div>
   );

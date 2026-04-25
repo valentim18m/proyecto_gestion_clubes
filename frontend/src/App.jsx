@@ -1,25 +1,29 @@
-import Perfil from './components/Perfil';
-import { useState } from "react";
-import { useState, useEffect } from "react"; // Solo una vez
+import { useState, useEffect } from "react";
 import FormularioSocio from "./components/FormularioSocio";
 import TablaSocios from "./components/TablaSocios";
 import { Muro } from "./components/Muro";
 import { Registro } from "./components/RegistroSocio";
 import Login from "./components/Login";
+import { Perfil } from "./components/Perfil";
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);
 
-  // --- 1. AQUÍ VA EL EFECTO PARA EL F5 ---
+  // --- 1. PRIMER CAMBIO: Estado para refrescar la tabla ---
+  const [actualizarLista, setActualizarLista] = useState(0);
+
+  const refrescarTabla = () => {
+    setActualizarLista((prev) => prev + 1);
+  };
+
+  // Persistencia: Recuperar sesión al cargar o refrescar (F5)
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem("usuario");
     if (usuarioGuardado) {
-      // Si hay algo guardado, lo volvemos a convertir en objeto
       setUsuario(JSON.parse(usuarioGuardado));
     }
   }, []);
 
-  // --- 2. FUNCIÓN PARA CERRAR SESIÓN PROLIJO ---
   const cerrarSesion = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
@@ -70,22 +74,50 @@ export default function App() {
             <span>
               Bienvenido, <strong>{usuario.nombre}</strong> (Rol: {usuario.rol})
             </span>
-            {/* --- 3. CAMBIAMOS EL ONCLICK AQUÍ --- */}
             <button onClick={cerrarSesion} style={{ cursor: "pointer" }}>
               Cerrar Sesión
             </button>
           </div>
 
-          <h2 style={{ textAlign: "center", color: "#555", marginTop: "30px" }}>
-            Gestión Interna de Socios
-          </h2>
+          <Perfil usuario={usuario} />
 
-          <FormularioSocio />
-          <TablaSocios />
+          {usuario.rol === "admin" ? (
+            <>
+              <h2
+                style={{
+                  textAlign: "center",
+                  color: "#555",
+                  marginTop: "30px",
+                }}
+              >
+                Gestión Interna de Socios
+              </h2>
+              {/* --- 2. SEGUNDO CAMBIO: Pasamos la función al Formulario --- */}
+              <FormularioSocio recargarSocios={refrescarTabla} />
+            </>
+          ) : (
+            <div
+              style={{
+                margin: "30px 0",
+                padding: "20px",
+                backgroundColor: "#e3f2fd",
+                borderRadius: "8px",
+                textAlign: "center",
+                border: "1px solid #bbdefb",
+              }}
+            >
+              <p>
+                👋 Hola <strong>{usuario.nombre}</strong>. Como Socio, podés ver
+                la lista de miembros y el muro.
+              </p>
+            </div>
+          )}
+
+          {/* --- 3. TERCER CAMBIO: Usamos la key para forzar el refresco --- */}
+          <TablaSocios key={actualizarLista} usuarioRol={usuario.rol} />
 
           <hr style={{ margin: "50px 0", borderTop: "2px solid #eee" }} />
 
-          {/* Pasamos el ID del usuario al Muro */}
           <Muro usuarioId={usuario.id} />
         </>
       )}
