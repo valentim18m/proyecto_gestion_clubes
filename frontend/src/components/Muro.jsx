@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import "./Muro.css";
 
-export const Muro = ({ usuarioId }) => {
+export const Muro = ({ usuarioId, usuarioRol }) => {
   const [comentarios, setComentarios] = useState([]);
   const [nuevoTexto, setNuevoTexto] = useState("");
+
+  // 1. Cargar mensajes apenas entra al muro
+  useEffect(() => {
+    traerMensajes();
+  }, []);
 
   const traerMensajes = async () => {
     try {
@@ -14,10 +19,6 @@ export const Muro = ({ usuarioId }) => {
       console.error("Error al cargar el muro:", error);
     }
   };
-
-  useEffect(() => {
-    traerMensajes();
-  }, []);
 
   const publicar = async (e) => {
     e.preventDefault();
@@ -44,17 +45,16 @@ export const Muro = ({ usuarioId }) => {
       return;
 
     try {
+      // 💡 IMPORTANTE: Ahora mandamos el ROL y el ID del USUARIO logueado
       const response = await fetch(
-        `http://localhost:5000/api/comentarios/${id}`,
-        {
-          method: "DELETE",
-        },
+        `http://localhost:5000/api/comentarios/${id}?rol=${usuarioRol}&usuarioId=${usuarioId}`,
+        { method: "DELETE" },
       );
 
       if (response.ok) {
         traerMensajes();
       } else {
-        alert("No se pudo eliminar el comentario");
+        alert("No tenés permisos para eliminar este comentario");
       }
     } catch (error) {
       console.error("Error al eliminar:", error);
@@ -86,14 +86,20 @@ export const Muro = ({ usuarioId }) => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
                 >
-                  <span>{new Date(c.fecha).toLocaleDateString()}</span>
+                  <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                    {new Date(c.fecha).toLocaleDateString()}
+                  </span>
 
-                  {/* Comparamos IDs asegurando que ambos sean números */}
-                  {usuarioId && Number(c.id_usuario) === Number(usuarioId) && (
+                  {/* LÓGICA DE BORRADO:
+                    Se muestra si: el usuario es ADMIN 
+                    O si el mensaje le pertenece al usuario logueado 
+                  */}
+                  {(usuarioRol === "admin" ||
+                    Number(c.id_usuario) === Number(usuarioId)) && (
                     <button
                       onClick={() => eliminarComentario(c.id)}
                       className="btn-borrar-comentario"
-                      title="Eliminar mi mensaje"
+                      title="Eliminar mensaje"
                     >
                       🗑️
                     </button>

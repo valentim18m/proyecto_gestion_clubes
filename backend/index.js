@@ -117,18 +117,38 @@ app.post("/api/comentarios", async (req, res) => {
   }
 });
 
-// Borrar un comentario
+// Borrar un comentario (Admin puede todo, Socio solo el suyo)
 app.delete("/api/comentarios/:id", async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // ID del comentario a borrar
+  const { rol, usuarioId } = req.query; // Rol e ID del que está logueado
+
   try {
-    const [result] = await pool.query("DELETE FROM comentarios WHERE id = ?", [
-      id,
-    ]);
-    if (result.affectedRows === 0)
+    // 1. Primero buscamos el comentario para ver quién es el dueño
+    const [rows] = await pool.query(
+      "SELECT id_usuario FROM comentarios WHERE id = ?",
+      [id],
+    );
+
+    if (rows.length === 0) {
       return res.status(404).json({ mensaje: "El comentario no existe" });
-    res.json({ mensaje: "Comentario eliminado" });
+    }
+
+    const dueñoId = rows[0].id_usuario;
+
+    // 2. Aplicamos la lógica de permisos
+    // ¿Es Admin? O ¿Es el mismo usuario que lo escribió?
+    if (rol === "admin" || Number(usuarioId) === Number(dueñoId)) {
+      await pool.query("DELETE FROM comentarios WHERE id = ?", [id]);
+      return res.json({ mensaje: "Comentario eliminado correctamente" });
+    } else {
+      // Si no es ninguno de los dos, le denegamos el acceso
+      return res.status(403).json({
+        mensaje: "No tenés permiso para borrar este comentario",
+      });
+    }
   } catch (err) {
-    res.status(500).json({ error: "No se pudo eliminar el comentario" });
+    console.error("Error al eliminar comentario:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
@@ -179,6 +199,97 @@ app.delete("/api/socios/:id", async (req, res) => {
     res.json({ mensaje: "Socio eliminado correctamente" });
   } catch (err) {
     res.status(500).json({ error: "Error al intentar borrar el socio" });
+  }
+});
+// --- 4. RUTAS DE PARTIDOS Y RESULTADOS ---
+
+// Obtener todos los partidos (Para socios y admin)
+app.get("/api/partidos", async (req, res) => {
+  try {
+    // Los traemos ordenados por fecha, los más recientes primero
+    const query = "SELECT * FROM partidos ORDER BY fecha DESC";
+    const [rows] = await pool.query(query);
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ ERROR AL TRAER PARTIDOS:", err.message);
+    res.status(500).json({ error: "No se pudo obtener la lista de partidos" });
+  }
+});
+
+// Cargar un nuevo partido o resultado (SOLO ADMIN)
+app.post("/api/partidos", async (req, res) => {
+  const {
+    equipo_local,
+    equipo_visitante,
+    goles_local,
+    goles_visitante,
+    fecha,
+    categoria,
+    estado,
+  } = req.body;
+  const { rol } = req.query; // Recibimos el rol desde el frontend
+
+  // 🛡️ SEGURIDAD: Solo el admin carga resultados
+  if (rol !== "admin") {
+    return res
+      .status(403)
+      .json({ mensaje: "Acceso denegado: Se requiere rol de administrador" });
+  }
+
+  // Validación básica de campos
+  if (!equipo_local || !equipo_visitante || !fecha) {
+    return res
+      .status(400)
+      .json({ mensaje: "Faltan datos obligatorios (Equipos o Fecha)" });
+  }
+
+  try {
+    const query = `
+      INSERT INTO partidos (equipo_local, equipo_visitante, goles_local, goles_visitante, fecha, categoria, estado) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    await pool.query(query, [
+      equipo_local,
+      equipo_visitante,
+      goles_local || 0,
+      goles_visitante || 0,
+      fecha,
+      categoria || "Primera",
+      estado || "programado",
+    ]);
+
+    res
+      .status(201)
+      .json({ mensaje: "Partido/Resultado cargado correctamente" });
+  } catch (err) {
+    console.error("❌ ERROR AL INSERTAR PARTIDO:", err.message);
+    res.status(500).json({ error: "Error interno al guardar el partido" });
+  }
+});
+
+// Eliminar un partido (SOLO ADMIN)
+app.delete("/api/partidos/:id", async (req, res) => {
+  const { id } = req.params;
+  const { rol } = req.query;
+
+  if (rol !== "admin") {
+    return res
+      .status(403)
+      .json({ mensaje: "No tenés permiso para eliminar partidos" });
+  }
+
+  try {
+    const [result] = await pool.query("DELETE FROM partidos WHERE id = ?", [
+      id,
+    ]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ mensaje: "El partido no existe" });
+    }
+    res.json({ mensaje: "Partido eliminado correctamente" });
+  } catch (err) {
+    console.error("❌ ERROR AL ELIMINAR PARTIDO:", err.message);
+    res.status(500).json({ error: "No se pudo eliminar el partido" });
   }
 });
 
