@@ -1,95 +1,63 @@
 import { useState } from "react";
 
 export default function Login({ setUsuario }) {
+  // 1. Estados para los inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // 2. Función que se ejecuta al darle al botón
   const manejarSubmit = async (e) => {
-    e.preventDefault(); // Evita que la página se recargue
+    e.preventDefault(); // 🛡️ Evita que la página recargue
 
     try {
       const response = await fetch("http://localhost:5000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // Mandamos lo que el usuario escribió en los inputs
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // 1. Guardamos la sesión en el navegador (Persistencia)
+        // Guardamos la sesión
         localStorage.setItem("token", data.token);
         localStorage.setItem("usuario", JSON.stringify(data.usuario));
 
-        // 2. Avisamos a App.jsx que ya hay un usuario
+        // Avisamos a App.jsx
         setUsuario(data.usuario);
-
-        alert("¡Bienvenido al club!");
       } else {
-        alert(data.mensaje || "Error al entrar");
+        alert(data.mensaje || "Credenciales incorrectas");
       }
     } catch (error) {
       console.error("Error de conexión:", error);
       alert("Che, fijate si el backend está prendido.");
     }
-  }; // <--- AQUÍ se cierra la función manejarSubmit
+  };
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        color: "white",
-        backgroundColor: "#1a1a1a", // Le agregué fondo oscuro para que combine
-      }}
-    >
-      <h3 style={{ textAlign: "center" }}>Iniciar Sesión (Entrar)</h3>
+    <>
       <form onSubmit={manejarSubmit}>
+        {/* 3. Inputs CONECTADOS a los estados */}
         <input
           type="email"
-          placeholder="Tu Email"
+          placeholder="Correo electrónico (Email)"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{
-            display: "block",
-            marginBottom: "10px",
-            width: "100%",
-            padding: "8px",
-            boxSizing: "border-box",
-          }}
         />
         <input
           type="password"
-          placeholder="Tu Contraseña"
+          placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{
-            display: "block",
-            marginBottom: "10px",
-            width: "100%",
-            padding: "8px",
-            boxSizing: "border-box",
-          }}
         />
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            cursor: "pointer",
-            padding: "10px",
-            backgroundColor: "#28a745",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            fontWeight: "bold",
-          }}
-        >
-          Entrar al Sistema
+
+        <button type="submit" className="btn-login">
+          Iniciar Sesión
         </button>
       </form>
-    </div>
+    </>
   );
-} // <--- AQUÍ se cierra el componente principal
+}

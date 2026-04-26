@@ -10,69 +10,47 @@ import { GestionResultados } from "./components/GestionResultados";
 import { Inicio } from "./components/Inicio";
 import Navbar from "./components/Navbar";
 import { Comunidad } from "./components/Comunidad";
+import "./App.css"; // <-- Asegurate de que esto esté importado
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);
   const [mostrarLogin, setMostrarLogin] = useState(true);
-  const [vista, setVista] = useState("inicio"); // Estado para la navegación
+  const [vista, setVista] = useState("inicio");
 
-  // Estados para refrescar las listas
   const [actualizarLista, setActualizarLista] = useState(0);
   const [actualizarResultados, setActualizarResultados] = useState(0);
 
-  const refrescarTabla = () => {
-    setActualizarLista((prev) => prev + 1);
-  };
-
-  const refrescarResultados = () => {
-    setActualizarResultados((prev) => prev + 1);
-  };
+  const refrescarTabla = () => setActualizarLista((prev) => prev + 1);
+  const refrescarResultados = () => setActualizarResultados((prev) => prev + 1);
 
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem("usuario");
-    if (usuarioGuardado) {
-      setUsuario(JSON.parse(usuarioGuardado));
-    }
+    if (usuarioGuardado) setUsuario(JSON.parse(usuarioGuardado));
   }, []);
 
   const cerrarSesion = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
     setUsuario(null);
-    setVista("inicio"); // Al cerrar sesión volvemos al inicio por defecto
+    setVista("inicio");
   };
 
   return (
-    <div
-      style={{
-        fontFamily: "sans-serif",
-        maxWidth: "1000px",
-        width: "100%",
-        margin: "0 auto",
-        padding: "10px",
-        boxSizing: "border-box",
-      }}
-    >
-      <h1 style={{ textAlign: "center", color: "#333" }}>
-        Sistema de Gestión - Club de Fútbol ⚽
-      </h1>
-
+    <div id="center">
+      {" "}
+      {/* Usamos el ID de tu App.css */}
+      {/* ⚽ PANTALLA DE INGRESO (Usuario NO logueado) */}
       {!usuario ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "40px",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{ width: "100%", maxWidth: "450px", textAlign: "center" }}
-          >
+        <div className="login-screen">
+          <div className="login-card">
+            <h1 style={{ color: "#2c3e50", marginBottom: "20px" }}>
+              C.A. Valentin ⚽
+            </h1>
+
             {mostrarLogin ? (
               <>
                 <Login setUsuario={setUsuario} />
-                <p style={{ marginTop: "20px" }}>
+                <p style={{ marginTop: "20px", color: "#7f8c8d" }}>
                   ¿No tenés cuenta?{" "}
                   <button
                     onClick={() => setMostrarLogin(false)}
@@ -84,8 +62,9 @@ export default function App() {
               </>
             ) : (
               <>
+                <h2 style={{ fontSize: "1.5rem" }}>Nuevo Socio</h2>
                 <Registro />
-                <p style={{ marginTop: "20px" }}>
+                <p style={{ marginTop: "20px", color: "#7f8c8d" }}>
                   ¿Ya tenés cuenta?{" "}
                   <button
                     onClick={() => setMostrarLogin(true)}
@@ -99,27 +78,26 @@ export default function App() {
           </div>
         </div>
       ) : (
-        <>
-          <div style={styles.navBar}>
+        /* 🏟️ PLATAFORMA DEL CLUB (Usuario Logueado) */
+        <div style={{ width: "100%" }}>
+          <div style={styles.headerTop}>
             <span>
               Bienvenido, <strong>{usuario.nombre}</strong> (Rol: {usuario.rol})
             </span>
-            <button onClick={cerrarSesion} style={{ cursor: "pointer" }}>
-              Cerrar Sesión
-            </button>
           </div>
 
           <Perfil usuario={usuario} />
 
-          {/* MENÚ DE NAVEGACIÓN */}
-          <Navbar setVista={setVista} vistaActual={vista} />
-
-          {/* LÓGICA DE VISTAS CONDICIONALES */}
+          <Navbar
+            setVista={setVista}
+            vistaActual={vista}
+            cerrarSesion={cerrarSesion}
+          />
 
           {vista === "inicio" && <Inicio nombreUsuario={usuario.nombre} />}
 
           {vista === "socios" && (
-            <>
+            <div className="seccion-contenedor" style={{ padding: "20px" }}>
               {usuario.rol === "admin" && (
                 <>
                   <h2 style={styles.seccionTitulo}>
@@ -132,16 +110,14 @@ export default function App() {
                 key={`socios-${actualizarLista}`}
                 usuarioRol={usuario.rol}
               />
-            </>
+            </div>
           )}
 
           {vista === "resultados" && (
-            <>
+            <div className="seccion-contenedor" style={{ padding: "20px" }}>
               {usuario.rol === "admin" && (
                 <>
-                  <h2 style={styles.seccionTitulo}>
-                    Panel de Resultados Deportivos
-                  </h2>
+                  <h2 style={styles.seccionTitulo}>Panel de Resultados</h2>
                   <FormularioResultado
                     recargarPartidos={refrescarResultados}
                     usuarioRol={usuario.rol}
@@ -152,11 +128,15 @@ export default function App() {
                 key={`resultados-${actualizarResultados}`}
                 usuarioRol={usuario.rol}
               />
-            </>
+            </div>
           )}
+
           {vista === "comunidad" && <Comunidad />}
+
           {vista === "muro" && (
-            <Muro usuarioId={usuario.id} usuarioRol={usuario.rol} />
+            <div className="seccion-contenedor" style={{ padding: "20px" }}>
+              <Muro usuarioId={usuario.id} usuarioRol={usuario.rol} />
+            </div>
           )}
 
           <footer
@@ -165,11 +145,13 @@ export default function App() {
               marginTop: "50px",
               color: "#999",
               fontSize: "0.8rem",
+              borderTop: "1px solid #eee",
+              paddingTop: "20px",
             }}
           >
             © 2026 Gestión Club de Fútbol - Panel Administrativo
           </footer>
-        </>
+        </div>
       )}
     </div>
   );
@@ -180,18 +162,23 @@ const styles = {
     cursor: "pointer",
     background: "none",
     border: "none",
-    color: "blue",
+    color: "#3498db",
+    fontWeight: "bold",
     textDecoration: "underline",
   },
-  navBar: {
+  headerTop: {
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    background: "#f4f4f4",
+    justifyContent: "flex-end",
     padding: "10px",
-    borderRadius: "8px",
-    flexWrap: "wrap",
-    gap: "10px",
+    fontSize: "0.9rem",
+    color: "#7f8c8d",
   },
-  seccionTitulo: { textAlign: "center", color: "#555", marginTop: "30px" },
+  seccionTitulo: {
+    textAlign: "center",
+    color: "#2c3e50",
+    marginTop: "10px",
+    marginBottom: "20px",
+    textTransform: "uppercase",
+    fontSize: "1.5rem",
+  },
 };

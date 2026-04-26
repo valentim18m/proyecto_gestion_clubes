@@ -1,23 +1,33 @@
-const Navbar = ({ setVista, usuarioRol, cerrarSesion }) => {
+const Navbar = ({ setVista, vistaActual, cerrarSesion }) => {
+  const botones = [
+    { id: "inicio", label: "Inicio" },
+    { id: "socios", label: "Socios" },
+    { id: "resultados", label: "Resultados" },
+    { id: "comunidad", label: "Comunidad" },
+    { id: "muro", label: "Muro" },
+  ];
+
   return (
     <nav style={styles.nav}>
       <div style={styles.logo}>C.A. Valentin ⚽</div>
       <ul style={styles.menu}>
-        <li onClick={() => setVista("inicio")} style={styles.item}>
-          Inicio
-        </li>
-        <li onClick={() => setVista("socios")} style={styles.item}>
-          Socios
-        </li>
-        <li onClick={() => setVista("resultados")} style={styles.item}>
-          Resultados
-        </li>
-        <li onClick={() => setVista("muro")} style={styles.item}>
-          Muro
-        </li>
-        <li onClick={() => setVista("comunidad")} style={styles.item}>
-          Comunidad
-        </li>
+        {botones.map((btn) => (
+          <li
+            key={btn.id}
+            onClick={() => setVista(btn.id)}
+            style={{
+              ...styles.item,
+              backgroundColor:
+                vistaActual === btn.id
+                  ? "rgba(255,255,255,0.1)"
+                  : "transparent",
+              color: vistaActual === btn.id ? "#3498db" : "white",
+              fontWeight: vistaActual === btn.id ? "bold" : "500",
+            }}
+          >
+            {btn.label}
+          </li>
+        ))}
         <li onClick={cerrarSesion} style={styles.logout}>
           Salir
         </li>
@@ -26,6 +36,7 @@ const Navbar = ({ setVista, usuarioRol, cerrarSesion }) => {
   );
 };
 
+// 👇 ESTO ES LO QUE TE FALTABA (O SE HABÍA BORRADO)
 const styles = {
   nav: {
     display: "flex",
