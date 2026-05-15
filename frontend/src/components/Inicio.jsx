@@ -1,14 +1,14 @@
 export const Inicio = ({ nombreUsuario }) => {
   return (
     <div style={styles.container}>
-      <div style={styles.hero}>
-        <h1>¡Bienvenido al Club, {nombreUsuario}!</h1>
+      <div className="bienvenida-banner">
+        <h1>¡Bienvenido al Club California del este!</h1>
         <p>Gestioná tu pasión desde un solo lugar.</p>
       </div>
 
       <div style={styles.info}>
-        <h3>Propósito del Sistema</h3>
-        <p>
+        <h3 style={{ color: "#dbdbdb" }}>Propósito del Sistema</h3>
+        <p style={{ color: "#dbdbdb" }}>
           Este sistema ha sido diseñado para centralizar la administración de
           nuestro club. Aquí podrás consultar el listado de socios, seguir los
           resultados de todas las categorías en tiempo real y participar

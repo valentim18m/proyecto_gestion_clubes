@@ -1,16 +1,44 @@
-# React + Vite
+# ⚽ Sistema de Gestión - Club de Fútbol
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Plataforma web Full-Stack desarrollada para la administración centralizada de una institución deportiva. Permite gestionar el padrón de socios, realizar un seguimiento de los resultados de los partidos y fomenta la comunicación mediante un muro de novedades, con control de acceso basado en roles (RBAC).
 
-Currently, two official plugins are available:
+## 🚀 Características Principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Autenticación y Roles:** Sistema de login y registro. Roles definidos de `Admin` (lectura/escritura) y `Socio` (solo lectura y participación).
+- **Gestión de Socios (CRUD):** Alta, baja y modificación del padrón de socios (Exclusivo Admin).
+- **Resultados Deportivos:** Panel para cargar resultados del fin de semana y visualización en tiempo real para la comunidad.
+- **Muro Interactivo:** Espacio de avisos parroquiales y novedades donde los socios pueden comentar.
+- **Comisión Directiva:** Sección institucional con las autoridades del club.
+- **Diseño Responsivo (SPA):** Interfaz fluida (Single Page Application) adaptable a celulares y escritorio.
 
-## React Compiler
+## 🛠️ Tecnologías Utilizadas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend:** React.js, Vite, CSS (Variables y flexbox/grid).
+- **Backend:** Node.js, Express.js.
+- **Base de Datos:** MySQL.
+- **Control de Versiones:** Git / GitHub.
 
-## Expanding the ESLint configuration
+## ⚙️ Requisitos Previos
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Para ejecutar este proyecto en un entorno local, es necesario contar con:
+
+- [Node.js](https://nodejs.org/) (v16 o superior)
+- Servidor MySQL (XAMPP, WAMP, o MySQL Workbench)
+
+## 📦 Instalación y Ejecución
+
+Siga estos pasos para levantar el sistema en su máquina local:
+
+### 1. Base de Datos
+
+1. Abrir phpMyAdmin o su gestor de bases de datos preferido.
+2. Crear una base de datos vacía.
+3. Importar el archivo `backup_club.sql` ubicado en la carpeta raíz del proyecto.
+
+### 2. Configuración del Backend (Servidor)
+
+1. Abrir una terminal y navegar a la carpeta del backend: `cd backend`
+2. Instalar las dependencias:
+   ```bash
+   npm install
+   ```

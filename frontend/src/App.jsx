@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // 👈 ESTA ES LA QUE FALTABA
 import FormularioSocio from "./components/FormularioSocio";
 import TablaSocios from "./components/TablaSocios";
 import { Muro } from "./components/Muro";
@@ -10,7 +10,8 @@ import { GestionResultados } from "./components/GestionResultados";
 import { Inicio } from "./components/Inicio";
 import Navbar from "./components/Navbar";
 import { Comunidad } from "./components/Comunidad";
-import "./App.css"; // <-- Asegurate de que esto esté importado
+import Escudo from "./components/Escudo";
+import "./App.css";
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);
@@ -36,15 +37,18 @@ export default function App() {
   };
 
   return (
-    <div id="center">
+    <>
       {" "}
-      {/* Usamos el ID de tu App.css */}
-      {/* ⚽ PANTALLA DE INGRESO (Usuario NO logueado) */}
+      {/* 1. Usamos un Fragmento para no aplicar estilos globales aquí */}
       {!usuario ? (
+        /* ⚽ LOGIN FULL SCREEN: Ahora está libre del contenedor #center */
         <div className="login-screen">
           <div className="login-card">
             <h1 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-              C.A. Valentin ⚽
+              <p>C.A. California del Este ⚽</p>
+              <p style={{ fontSize: "0.9rem", color: "#7f8c8d" }}>
+                Bienvenido al club
+              </p>
             </h1>
 
             {mostrarLogin ? (
@@ -78,85 +82,88 @@ export default function App() {
           </div>
         </div>
       ) : (
-        /* 🏟️ PLATAFORMA DEL CLUB (Usuario Logueado) */
-        <div style={{ width: "100%" }}>
-          <div style={styles.headerTop}>
-            <span>
-              Bienvenido, <strong>{usuario.nombre}</strong> (Rol: {usuario.rol})
-            </span>
+        /* 🏟️ PLATAFORMA DEL CLUB: Aquí sí aplicamos el #center para centrar el contenido */
+        <div id="center">
+          <div style={{ width: "100%" }}>
+            <div style={styles.headerTop}>
+              <span>
+                Bienvenido, <strong>{usuario.nombre}</strong> (Rol:{" "}
+                {usuario.rol})
+              </span>
+            </div>
+
+            <Perfil usuario={usuario} />
+
+            <Navbar
+              setVista={setVista}
+              vistaActual={vista}
+              cerrarSesion={cerrarSesion}
+            />
+
+            {/* Vistas dinámicas */}
+            {vista === "inicio" && <Inicio nombreUsuario={usuario.nombre} />}
+
+            {vista === "socios" && (
+              <div className="seccion-contenedor" style={{ padding: "20px" }}>
+                {usuario.rol === "admin" && (
+                  <>
+                    <h2 style={styles.seccionTitulo}>
+                      Gestión Interna de Socios
+                    </h2>
+                    <FormularioSocio recargarSocios={refrescarTabla} />
+                  </>
+                )}
+                <TablaSocios
+                  key={`socios-${actualizarLista}`}
+                  usuarioRol={usuario.rol}
+                />
+              </div>
+            )}
+
+            {vista === "resultados" && (
+              <div className="seccion-contenedor" style={{ padding: "20px" }}>
+                {usuario.rol === "admin" && (
+                  <>
+                    <h2 style={styles.seccionTitulo}>Panel de Resultados</h2>
+                    <FormularioResultado
+                      recargarPartidos={refrescarResultados}
+                      usuarioRol={usuario.rol}
+                    />
+                  </>
+                )}
+                <GestionResultados
+                  key={`resultados-${actualizarResultados}`}
+                  usuarioRol={usuario.rol}
+                />
+              </div>
+            )}
+
+            {vista === "comunidad" && <Comunidad />}
+            {vista === "muro" && (
+              <div className="seccion-contenedor" style={{ padding: "20px" }}>
+                <Muro usuarioId={usuario.id} usuarioRol={usuario.rol} />
+              </div>
+            )}
+
+            <footer
+              style={{
+                textAlign: "center",
+                marginTop: "50px",
+                color: "#999",
+                fontSize: "0.8rem",
+                borderTop: "1px solid #eee",
+                paddingTop: "20px",
+              }}
+            >
+              © 2026 Gestión Club de Fútbol - Panel Administrativo
+            </footer>
           </div>
-
-          <Perfil usuario={usuario} />
-
-          <Navbar
-            setVista={setVista}
-            vistaActual={vista}
-            cerrarSesion={cerrarSesion}
-          />
-
-          {vista === "inicio" && <Inicio nombreUsuario={usuario.nombre} />}
-
-          {vista === "socios" && (
-            <div className="seccion-contenedor" style={{ padding: "20px" }}>
-              {usuario.rol === "admin" && (
-                <>
-                  <h2 style={styles.seccionTitulo}>
-                    Gestión Interna de Socios
-                  </h2>
-                  <FormularioSocio recargarSocios={refrescarTabla} />
-                </>
-              )}
-              <TablaSocios
-                key={`socios-${actualizarLista}`}
-                usuarioRol={usuario.rol}
-              />
-            </div>
-          )}
-
-          {vista === "resultados" && (
-            <div className="seccion-contenedor" style={{ padding: "20px" }}>
-              {usuario.rol === "admin" && (
-                <>
-                  <h2 style={styles.seccionTitulo}>Panel de Resultados</h2>
-                  <FormularioResultado
-                    recargarPartidos={refrescarResultados}
-                    usuarioRol={usuario.rol}
-                  />
-                </>
-              )}
-              <GestionResultados
-                key={`resultados-${actualizarResultados}`}
-                usuarioRol={usuario.rol}
-              />
-            </div>
-          )}
-
-          {vista === "comunidad" && <Comunidad />}
-
-          {vista === "muro" && (
-            <div className="seccion-contenedor" style={{ padding: "20px" }}>
-              <Muro usuarioId={usuario.id} usuarioRol={usuario.rol} />
-            </div>
-          )}
-
-          <footer
-            style={{
-              textAlign: "center",
-              marginTop: "50px",
-              color: "#999",
-              fontSize: "0.8rem",
-              borderTop: "1px solid #eee",
-              paddingTop: "20px",
-            }}
-          >
-            © 2026 Gestión Club de Fútbol - Panel Administrativo
-          </footer>
         </div>
       )}
-    </div>
+    </>
   );
 }
-
+// AGREGÁ ESTO AL FINAL DE TODO EN App.jsx
 const styles = {
   linkBtn: {
     cursor: "pointer",
@@ -165,6 +172,8 @@ const styles = {
     color: "#3498db",
     fontWeight: "bold",
     textDecoration: "underline",
+    padding: 0,
+    fontSize: "0.9rem",
   },
   headerTop: {
     display: "flex",

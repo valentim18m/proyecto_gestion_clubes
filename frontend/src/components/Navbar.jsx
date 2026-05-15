@@ -1,3 +1,6 @@
+// 1. Importá tu componente de Escudo o la imagen directamente
+import Escudo from "./Escudo";
+
 const Navbar = ({ setVista, vistaActual, cerrarSesion }) => {
   const botones = [
     { id: "inicio", label: "Inicio" },
@@ -9,7 +12,12 @@ const Navbar = ({ setVista, vistaActual, cerrarSesion }) => {
 
   return (
     <nav style={styles.nav}>
-      <div style={styles.logo}>C.A. Valentin ⚽</div>
+      {/* 👇 ACÁ INTEGRAMOS EL ESCUDO */}
+      <div style={styles.logo}>
+        <Escudo size="35px" />
+        <span style={{ marginLeft: "10px" }}>C.A. California del Este</span>
+      </div>
+
       <ul style={styles.menu}>
         {botones.map((btn) => (
           <li
@@ -36,7 +44,6 @@ const Navbar = ({ setVista, vistaActual, cerrarSesion }) => {
   );
 };
 
-// 👇 ESTO ES LO QUE TE FALTABA (O SE HABÍA BORRADO)
 const styles = {
   nav: {
     display: "flex",
@@ -49,7 +56,13 @@ const styles = {
     marginBottom: "20px",
     flexWrap: "wrap",
   },
-  logo: { fontWeight: "bold", fontSize: "1.2rem" },
+  // ⚡ ACTUALIZAMOS EL LOGO PARA QUE ALINEE EL ESCUDO CON EL TEXTO
+  logo: {
+    display: "flex",
+    alignItems: "center",
+    fontWeight: "bold",
+    fontSize: "1.2rem",
+  },
   menu: {
     display: "flex",
     listStyle: "none",
