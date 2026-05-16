@@ -44,9 +44,15 @@ export default function App() {
         /* ⚽ LOGIN FULL SCREEN: Ahora está libre del contenedor #center */
         <div className="login-screen">
           <div className="login-card">
-            <h1 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-              <p>C.A. California del Este ⚽</p>
-              <p style={{ fontSize: "0.9rem", color: "#7f8c8d" }}>
+            <h1
+              style={{
+                fontSize: "0.9rem",
+                color: "#e5e7e9",
+                marginBottom: "20px",
+              }}
+            >
+              C.A. California del Este ⚽
+              <p style={{ fontSize: "0.9rem", color: "#eef6f7" }}>
                 Bienvenido al club
               </p>
             </h1>
@@ -54,7 +60,7 @@ export default function App() {
             {mostrarLogin ? (
               <>
                 <Login setUsuario={setUsuario} />
-                <p style={{ marginTop: "20px", color: "#7f8c8d" }}>
+                <p style={{ marginTop: "20px", color: "#eaf4f5" }}>
                   ¿No tenés cuenta?{" "}
                   <button
                     onClick={() => setMostrarLogin(false)}

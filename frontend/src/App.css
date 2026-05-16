@@ -113,19 +113,20 @@
   background-attachment: fixed; /* Evita que el fondo se mueva */
 }
 .login-card {
-  background: rgba(
-    255,
-    255,
-    255,
-    0.95
-  ); /* Un toque de transparencia queda más moderno */
+  /* Bajamos de 0.95 a 0.65 para darle más transparencia */
+  background: rgba(255, 255, 255, 0.15);
+
+  /* Efecto vidrio: desenfoca la imagen de fondo justo detrás de la tarjeta */
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px); /* Para que funcione en Safari también */
+
   padding: 40px;
   border-radius: 15px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   width: 100%;
   max-width: 400px;
   text-align: center;
-  border-top: 5px solid var(--primary); /* Usamos tu variable global */
+  border-top: 5px solid var(--primary);
 }
 
 .login-card h2 {
